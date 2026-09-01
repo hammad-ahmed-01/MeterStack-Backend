@@ -18,17 +18,40 @@ export class UsersRepository {
   }
 
   async upsert(id: string, fullName: string | null): Promise<ProfileRecord> {
+    const existing = await this.findById(id);
+    if (existing) {
+      return existing;
+    }
+
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .upsert(
-        { id, full_name: fullName },
-        { onConflict: "id" },
-      )
+      .insert({ id, full_name: fullName })
       .select("id, full_name, created_at, updated_at")
       .single();
 
     if (error || !data) {
       rethrowDatabaseError(error ?? new Error("Failed to upsert profile"));
+    }
+
+    return data;
+  }
+
+  async updateFullName(id: string, fullName: string): Promise<ProfileRecord> {
+    const existing = await this.findById(id);
+
+    if (!existing) {
+      return this.upsert(id, fullName);
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("profiles")
+      .update({ full_name: fullName })
+      .eq("id", id)
+      .select("id, full_name, created_at, updated_at")
+      .single();
+
+    if (error || !data) {
+      rethrowDatabaseError(error ?? new Error("Failed to update profile"));
     }
 
     return data;

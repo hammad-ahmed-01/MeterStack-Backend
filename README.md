@@ -10,7 +10,7 @@ Stack: Node, Express, TypeScript, Supabase (Auth + Postgres), Stripe, Zod, Pino.
 
 A user signs in through Supabase. Every protected request carries that access token. The API verifies it, then loads the user and their organization from the database. Body fields like `user_id`, `organization_id`, or `role` are not trusted.
 
-Each user has a `profiles` row, separate from `auth.users`. Signup creates it via a trigger; `GET /api/v1/me` will create it if it is missing.
+Each user has a `profiles` row, separate from `auth.users`. Signup creates it via a trigger; `GET /api/v1/me` will create it if it is missing, without overwriting an existing name. `PATCH /me` updates `profiles.full_name`.
 
 An organization is the tenant. Creating one makes the caller the owner and starts them on the Free plan. If Stripe is configured it also opens a Stripe customer. The schema already allows several memberships per user. For now the current org is the earliest one, unless the request sends `X-Organization-Id` for an org the user actually belongs to. Roles are just `owner` and `member`.
 
@@ -28,6 +28,7 @@ All routes sit under `/api/v1`.
 | --- | --- | --- |
 | `GET /health` | public | `{ status, service, version }` |
 | `GET /me` | user | `{ id, email, fullName }` |
+| `PATCH /me` | user | `{ fullName }` |
 | `POST /organizations` | user | create org, owner, Free plan |
 | `GET /organizations/current` | user | current org |
 | `PATCH /organizations/current` | owner | rename |
