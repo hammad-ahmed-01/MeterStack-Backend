@@ -7,6 +7,9 @@ import type {
   UpdateProductInput,
 } from "./products.types";
 
+const productColumns =
+  "id, organization_id, name, description, base_url, status, created_at, updated_at";
+
 export class ProductsRepository {
   async list(
     organizationId: string,
@@ -14,9 +17,7 @@ export class ProductsRepository {
   ): Promise<ProductRecord[]> {
     let query = supabaseAdmin
       .from("api_products")
-      .select(
-        "id, organization_id, name, description, status, created_at, updated_at",
-      )
+      .select(productColumns)
       .eq("organization_id", organizationId)
       .order("created_at", { ascending: false });
 
@@ -39,9 +40,7 @@ export class ProductsRepository {
   ): Promise<ProductRecord | null> {
     const { data, error } = await supabaseAdmin
       .from("api_products")
-      .select(
-        "id, organization_id, name, description, status, created_at, updated_at",
-      )
+      .select(productColumns)
       .eq("id", id)
       .eq("organization_id", organizationId)
       .maybeSingle();
@@ -65,9 +64,7 @@ export class ProductsRepository {
         description: input.description ?? null,
         status: "active",
       })
-      .select(
-        "id, organization_id, name, description, status, created_at, updated_at",
-      )
+      .select(productColumns)
       .single();
 
     if (error || !data) {
@@ -90,12 +87,11 @@ export class ProductsRepository {
           ? { description: input.description }
           : {}),
         ...(input.status !== undefined ? { status: input.status } : {}),
+        ...(input.baseUrl !== undefined ? { base_url: input.baseUrl } : {}),
       })
       .eq("id", id)
       .eq("organization_id", organizationId)
-      .select(
-        "id, organization_id, name, description, status, created_at, updated_at",
-      )
+      .select(productColumns)
       .maybeSingle();
 
     if (error) {

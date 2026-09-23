@@ -78,6 +78,7 @@ export class ProductsService {
       organizationId: product.organization_id,
       name: product.name,
       description: product.description,
+      baseUrl: product.base_url,
       status: product.status,
       createdAt: product.created_at,
       updatedAt: product.updated_at,

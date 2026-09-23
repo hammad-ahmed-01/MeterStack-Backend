@@ -5,6 +5,7 @@ export type ProductRecord = {
   organization_id: string;
   name: string;
   description: string | null;
+  base_url: string | null;
   status: ProductStatus;
   created_at: string;
   updated_at: string;
@@ -15,6 +16,7 @@ export type ProductResponse = {
   organizationId: string;
   name: string;
   description: string | null;
+  baseUrl: string | null;
   status: ProductStatus;
   createdAt: string;
   updatedAt: string;
@@ -29,4 +31,5 @@ export type UpdateProductInput = {
   name?: string;
   description?: string | null;
   status?: ProductStatus;
+  baseUrl?: string | null;
 };

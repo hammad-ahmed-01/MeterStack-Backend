@@ -3,6 +3,7 @@ import { asyncHandler } from "../../common/utils/async-handler";
 import { requireAuth } from "../../middleware/auth.middleware";
 import { requireOrganization } from "../../middleware/organization.middleware";
 import { validate } from "../../middleware/validate.middleware";
+import { productRoutesRouter } from "../product-routes/product-routes.routes";
 import { productsController } from "./products.controller";
 import {
   createProductBodySchema,
@@ -26,6 +27,8 @@ productsRoutes.post(
   validate({ body: createProductBodySchema }),
   asyncHandler((req, res) => productsController.create(req, res)),
 );
+
+productsRoutes.use("/:id/routes", productRoutesRouter);
 
 productsRoutes.get(
   "/:id",
