@@ -12,6 +12,8 @@ const product: ProductRecord = {
   name: "Images",
   description: null,
   base_url: "https://api.acme.dev",
+  rate_limit: 1000,
+  rate_limit_window_seconds: 60,
   status: "active",
   created_at: "2026-01-01T00:00:00.000Z",
   updated_at: "2026-01-01T00:00:00.000Z",

@@ -79,6 +79,8 @@ export class ProductsService {
       name: product.name,
       description: product.description,
       baseUrl: product.base_url,
+      rateLimit: product.rate_limit,
+      rateLimitWindowSeconds: product.rate_limit_window_seconds,
       status: product.status,
       createdAt: product.created_at,
       updatedAt: product.updated_at,

@@ -8,7 +8,7 @@ import type {
 } from "./products.types";
 
 const productColumns =
-  "id, organization_id, name, description, base_url, status, created_at, updated_at";
+  "id, organization_id, name, description, base_url, rate_limit, rate_limit_window_seconds, status, created_at, updated_at";
 
 export class ProductsRepository {
   async list(
@@ -88,6 +88,10 @@ export class ProductsRepository {
           : {}),
         ...(input.status !== undefined ? { status: input.status } : {}),
         ...(input.baseUrl !== undefined ? { base_url: input.baseUrl } : {}),
+        ...(input.rateLimit !== undefined ? { rate_limit: input.rateLimit } : {}),
+        ...(input.rateLimitWindowSeconds !== undefined
+          ? { rate_limit_window_seconds: input.rateLimitWindowSeconds }
+          : {}),
       })
       .eq("id", id)
       .eq("organization_id", organizationId)

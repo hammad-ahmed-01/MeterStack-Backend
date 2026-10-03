@@ -44,6 +44,12 @@ export const baseUrlSchema = z
   })
   .transform((value) => canonicalizeBaseUrl(value));
 
+export const rateLimitWindowSecondsSchema = z.union([
+  z.literal(60),
+  z.literal(3600),
+  z.literal(86400),
+]);
+
 const optionalBaseUrlSchema = z.preprocess((value) => {
   if (value === undefined) {
     return undefined;
@@ -75,12 +81,34 @@ export const updateProductBodySchema = z
     description: z.string().trim().max(2000).nullable().optional(),
     status: z.enum(["active", "archived"]).optional(),
     baseUrl: optionalBaseUrlSchema,
+    rateLimit: z.number().int().min(1).max(1_000_000).nullable().optional(),
+    rateLimitWindowSeconds: rateLimitWindowSecondsSchema.nullable().optional(),
   })
   .refine(
     (value) =>
       value.name !== undefined ||
       value.description !== undefined ||
       value.status !== undefined ||
-      value.baseUrl !== undefined,
+      value.baseUrl !== undefined ||
+      value.rateLimit !== undefined ||
+      value.rateLimitWindowSeconds !== undefined,
     { message: "At least one field is required" },
+  )
+  .refine(
+    (value) => {
+      const hasLimit = value.rateLimit !== undefined;
+      const hasWindow = value.rateLimitWindowSeconds !== undefined;
+
+      if (!hasLimit && !hasWindow) {
+        return true;
+      }
+
+      const bothNull = value.rateLimit === null && value.rateLimitWindowSeconds === null;
+      const bothSet =
+        typeof value.rateLimit === "number" &&
+        typeof value.rateLimitWindowSeconds === "number";
+
+      return bothNull || bothSet;
+    },
+    { message: "Set both the limit and the window, or clear both" },
   );

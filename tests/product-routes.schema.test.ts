@@ -38,6 +38,38 @@ describe("product base URL", () => {
   });
 });
 
+describe("product rate limit", () => {
+  it("accepts a limit with a window", () => {
+    const result = updateProductBodySchema.parse({
+      rateLimit: 1000,
+      rateLimitWindowSeconds: 60,
+    });
+
+    expect(result.rateLimit).toBe(1000);
+    expect(result.rateLimitWindowSeconds).toBe(60);
+  });
+
+  it("clears the limit only when both fields are null", () => {
+    const result = updateProductBodySchema.parse({
+      rateLimit: null,
+      rateLimitWindowSeconds: null,
+    });
+
+    expect(result.rateLimit).toBeNull();
+    expect(result.rateLimitWindowSeconds).toBeNull();
+  });
+
+  it("rejects a limit without a window and a window that is not allowed", () => {
+    expect(updateProductBodySchema.safeParse({ rateLimit: 100 }).success).toBe(false);
+    expect(
+      updateProductBodySchema.safeParse({
+        rateLimit: 100,
+        rateLimitWindowSeconds: 30,
+      }).success,
+    ).toBe(false);
+  });
+});
+
 describe("product route body", () => {
   it("normalizes a path", () => {
     const result = createProductRouteBodySchema.parse({

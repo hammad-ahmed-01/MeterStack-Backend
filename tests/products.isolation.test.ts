@@ -10,6 +10,8 @@ const orgAProduct: ProductRecord = {
   name: "Payments API",
   description: null,
   base_url: null,
+  rate_limit: null,
+  rate_limit_window_seconds: null,
   status: "active",
   created_at: "2026-01-01T00:00:00.000Z",
   updated_at: "2026-01-01T00:00:00.000Z",

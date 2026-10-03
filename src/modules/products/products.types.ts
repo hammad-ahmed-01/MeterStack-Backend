@@ -6,6 +6,8 @@ export type ProductRecord = {
   name: string;
   description: string | null;
   base_url: string | null;
+  rate_limit: number | null;
+  rate_limit_window_seconds: number | null;
   status: ProductStatus;
   created_at: string;
   updated_at: string;
@@ -17,6 +19,8 @@ export type ProductResponse = {
   name: string;
   description: string | null;
   baseUrl: string | null;
+  rateLimit: number | null;
+  rateLimitWindowSeconds: number | null;
   status: ProductStatus;
   createdAt: string;
   updatedAt: string;
@@ -32,4 +36,6 @@ export type UpdateProductInput = {
   description?: string | null;
   status?: ProductStatus;
   baseUrl?: string | null;
+  rateLimit?: number | null;
+  rateLimitWindowSeconds?: number | null;
 };
