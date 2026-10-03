@@ -87,6 +87,18 @@ export class ApiKeysRepository {
 
     return data;
   }
+
+  async touchLastUsed(id: string, organizationId: string, usedAt: string): Promise<void> {
+    const { error } = await supabaseAdmin
+      .from("api_keys")
+      .update({ last_used_at: usedAt })
+      .eq("id", id)
+      .eq("organization_id", organizationId);
+
+    if (error) {
+      rethrowDatabaseError(error);
+    }
+  }
 }
 
 export const apiKeysRepository = new ApiKeysRepository();
