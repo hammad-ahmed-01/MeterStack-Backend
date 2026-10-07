@@ -1,7 +1,7 @@
 {
   "name": "meterstack-backend",
   "version": "0.1.0",
-  "description": "MeterStack API — authentication, organizations, products, API keys, and billing foundation",
+  "description": "MeterStack API — authentication, organizations, products, routes, request logs, API keys, and billing",
   "private": true,
   "engines": {
     "node": ">=22"
