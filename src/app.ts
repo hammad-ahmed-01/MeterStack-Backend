@@ -9,7 +9,17 @@ import {
   notFoundMiddleware,
 } from "./middleware/error.middleware";
 import { requestIdMiddleware } from "./middleware/request-id.middleware";
+import { gatewayRoutes } from "./modules/gateway/gateway.routes";
 import { apiV1Router } from "./routes";
+
+export function skipsJsonBody(url: string): boolean {
+  return (
+    url.startsWith("/api/v1/webhooks/stripe") ||
+    url === "/gateway" ||
+    url.startsWith("/gateway/") ||
+    url.startsWith("/gateway?")
+  );
+}
 
 export function createApp() {
   const app = express();
@@ -69,9 +79,10 @@ export function createApp() {
   );
 
   // Stripe signature verification requires the raw request body.
+  // The gateway also keeps the raw body so a later proxy can forward it.
   app.use("/api/v1/webhooks/stripe", express.raw({ type: "application/json" }));
   app.use((req, res, next) => {
-    if (req.originalUrl.startsWith("/api/v1/webhooks/stripe")) {
+    if (skipsJsonBody(req.originalUrl)) {
       next();
       return;
     }
@@ -80,6 +91,7 @@ export function createApp() {
   });
 
   app.use("/api/v1", apiV1Router);
+  app.use("/gateway", gatewayRoutes);
   app.use(notFoundMiddleware);
   app.use(errorMiddleware);
 

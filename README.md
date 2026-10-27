@@ -1,6 +1,6 @@
 # MeterStack
 
-MeterStack is an API platform. The long-term product covers metering, monetization, billing, webhooks, and observability. This repo is the backend for the control plane: sign in, belong to an organization, define API products and their routes, store a rate limit, list request logs, issue keys, and subscribe.
+MeterStack is an API platform. The long-term product covers metering, monetization, billing, webhooks, and observability. This repo is the backend for the control plane: sign in, belong to an organization, define API products and their routes, store a rate limit, list request logs, issue keys, and subscribe. It also exposes a public gateway that authenticates those keys.
 
 The frontend is a separate Next.js app. It authenticates with Supabase and talks to this API. Business data is not meant to be read from Postgres by the client.
 
@@ -20,13 +20,13 @@ Routes belong to a product. Each route is a method and a path. Delete disables t
 
 Request logs are a read model for the organization. `GET /requests` lists them, optionally filtered by `productId`, `statusClass` (`2xx`, `4xx`, `5xx`), and `limit` (default 50, max 100). Rows are written by `requestLogsService.record`, which also sets `last_used_at` on the key. The dashboard does not create rows.
 
-API keys look like `ms_test_…` or `ms_live_…`. The full secret is returned once, at creation. After that the API only stores a prefix and a SHA-256 hash. Revoking marks the key revoked; the row stays. There is no gateway yet, so these keys are not used to authenticate inbound API traffic.
+API keys look like `ms_test_…` or `ms_live_…`. The full secret is returned once, at creation. After that the API only stores a prefix and a SHA-256 hash. Revoking marks the key revoked; the row stays. A caller can present that key to `/gateway`. The gateway hashes it and accepts an active key. It does not forward the request yet.
 
 Billing is local-first. Every org gets a `subscriptions` row on the Free plan without Stripe. Checkout, the customer portal, and webhooks need `STRIPE_SECRET_KEY` (plus a webhook secret / Pro price id where relevant) and return `STRIPE_NOT_CONFIGURED` if those are missing. Duplicate Stripe event ids are ignored.
 
 ## API
 
-All routes sit under `/api/v1`.
+Control-plane routes sit under `/api/v1`. The gateway is mounted at `/gateway` and does not use a Supabase session.
 
 | | | |
 | --- | --- | --- |
@@ -54,6 +54,8 @@ All routes sit under `/api/v1`.
 | `POST /billing/customer-portal` | member | |
 | `POST /webhooks/stripe` | Stripe signature | |
 
+`/gateway` and `/gateway/*` take any method. The caller sends `Authorization: Bearer` with an `ms_test_…` or `ms_live_…` key. A missing header, a malformed key, an unknown key, and a revoked key return 401. Unknown and revoked use the same message. A valid key returns 501 `GATEWAY_NOT_READY`: the key was accepted, and this step does not match a route, proxy to an upstream, enforce the rate limit, or write a request log. The JSON parser does not run on `/gateway`, so a later proxy can forward the raw body.
+
 Errors look like `{ error: { code, message } }`. Validation failures add `details`.
 
 ## Data
@@ -76,6 +78,6 @@ The API uses the Supabase service role, which bypasses RLS. Access control lives
 
 Required env: `PORT`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `FRONTEND_URL`. Stripe vars (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRO_PRICE_ID`) are optional. Copy `.env.example` to `.env`. Missing required values fail startup. Service role and Stripe secret stay on this server.
 
-`npm run dev` serves on port 4000. Also `build`, `start`, `typecheck`, `lint`, `test`. Tests cover key generation/hashing, auth middleware, org membership checks, product isolation, route isolation, and request-log scoping.
+`npm run dev` serves on port 4000. Also `build`, `start`, `typecheck`, `lint`, `test`. Tests cover key generation/hashing, gateway key checks, auth middleware, org membership checks, product isolation, route isolation, and request-log scoping.
 
-This API does not meter requests, run a gateway, or do usage-based billing. The stored rate limit is not enforced.
+This API does not meter requests or do usage-based billing. The gateway authenticates keys and does not proxy traffic. The stored rate limit is not enforced.

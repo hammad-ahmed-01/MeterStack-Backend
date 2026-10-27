@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   generateApiKey,
   hashApiKey,
+  isApiKeyFormat,
 } from "../src/modules/api-keys/api-keys.crypto";
 import { ApiKeysService } from "../src/modules/api-keys/api-keys.service";
 import type { ApiKeyRecord } from "../src/modules/api-keys/api-keys.types";
@@ -55,6 +56,13 @@ describe("API key hashing", () => {
 
   it("produces different hashes for different keys", () => {
     expect(hashApiKey("ms_test_one")).not.toBe(hashApiKey("ms_test_two"));
+  });
+
+  it("accepts a generated key and rejects a short or mistyped one", () => {
+    expect(isApiKeyFormat(generateApiKey("test").key)).toBe(true);
+    expect(isApiKeyFormat(generateApiKey("live").key)).toBe(true);
+    expect(isApiKeyFormat("ms_test_short")).toBe(false);
+    expect(isApiKeyFormat("ms_prod_abcdefghijklmnop")).toBe(false);
   });
 
   it("stores only prefix and hash, and returns the full key once", async () => {

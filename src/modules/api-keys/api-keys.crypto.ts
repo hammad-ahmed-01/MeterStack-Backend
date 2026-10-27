@@ -4,9 +4,14 @@ export type ApiKeyEnvironment = "test" | "live";
 
 const PREFIX_LENGTH = 12;
 const SECRET_BYTES = 24;
+const API_KEY_PATTERN = /^ms_(test|live)_[A-Za-z0-9_-]{16,128}$/;
 
 export function hashApiKey(key: string): string {
   return createHash("sha256").update(key, "utf8").digest("hex");
+}
+
+export function isApiKeyFormat(key: string): boolean {
+  return API_KEY_PATTERN.test(key);
 }
 
 export function generateApiKey(environment: ApiKeyEnvironment): {

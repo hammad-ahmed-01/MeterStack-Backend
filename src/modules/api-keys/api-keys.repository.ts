@@ -28,6 +28,22 @@ export class ApiKeysRepository {
     return data ?? [];
   }
 
+  async findByHash(keyHash: string): Promise<ApiKeyRecord | null> {
+    const { data, error } = await supabaseAdmin
+      .from("api_keys")
+      .select(
+        "id, organization_id, name, key_prefix, key_hash, environment, status, last_used_at, created_at, revoked_at",
+      )
+      .eq("key_hash", keyHash)
+      .maybeSingle();
+
+    if (error) {
+      rethrowDatabaseError(error);
+    }
+
+    return data;
+  }
+
   async findById(
     id: string,
     organizationId: string,
